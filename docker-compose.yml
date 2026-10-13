@@ -1,0 +1,38 @@
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql://student:studentpass@db:5432/tasksdb
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: student
+      POSTGRES_PASSWORD: studentpass
+      POSTGRES_DB: tasksdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U student -d tasksdb"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge
+volumes:
+  postgres_data:

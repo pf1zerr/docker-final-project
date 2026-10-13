@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Мої завдання</title>
+<style>
+body{font-family:Arial,sans-serif;max-width:650px;margin:45px auto;padding:0 15px;background:#f6f6f6}main{background:white;padding:25px;border:1px solid #ddd;border-radius:8px}input{padding:10px;width:65%}button{padding:10px;cursor:pointer}li{padding:10px;border-bottom:1px solid #eee;display:flex;justify-content:space-between}h1{font-size:26px}
+</style>
+</head>
+<body><main><h1>Мої завдання</h1>
+<form id="form"><input id="title" placeholder="Нове завдання" required maxlength="200"><button>Додати</button></form>
+<ul id="tasks"></ul><p id="message"></p></main>
+<script>
+const list=document.getElementById('tasks'), msg=document.getElementById('message');
+async function load(){try{const r=await fetch('/api/tasks');if(!r.ok)throw Error('Помилка сервера');const data=await r.json();list.replaceChildren();data.forEach(t=>{const li=document.createElement('li');const span=document.createElement('span');span.textContent=t.title;const btn=document.createElement('button');btn.textContent='Видалити';btn.onclick=async()=>{await fetch('/api/tasks/'+t.id,{method:'DELETE'});load()};li.append(span,btn);list.append(li)});msg.textContent=''}catch(e){msg.textContent=e.message}}
+document.getElementById('form').onsubmit=async e=>{e.preventDefault();const title=document.getElementById('title').value.trim();if(!title)return;const r=await fetch('/api/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title})});if(r.ok){document.getElementById('title').value='';load()}else{msg.textContent='Не вдалося додати завдання'}};load();
+</script></body></html>
